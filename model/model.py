@@ -5,23 +5,24 @@ from database.DAO import DAO
 
 class Model:
     def __init__(self):
+        self._allNodes = []
         self._grafo = nx.DiGraph()
         self._idMapDrivers = {}
 
-
-    def getAllYears(self):
+    def getYears(self):
         return DAO.getAllYears()
 
-    def buildGraph(self, anno):
+    def buildGraph(self, year):
+        self._allNodes = DAO.getDriversByYear(year)
         self._grafo.clear()
-        drivers = DAO.getDriversByYear(anno)
-        self._grafo.add_nodes_from(drivers)
-        for d in drivers:
-            self._idMapDrivers[d.driverID] = d
+        self._grafo.add_nodes_from(self._allNodes)
+        for driver in self._allNodes:
+            self._idMapDrivers[driver.driverID] = driver
 
-        edges = DAO.getDriverYearResults(anno, self._idMapDrivers)
-        for e in edges:
+        self.allEdges = DAO.getDriversByYearResults(year, self._idMapDrivers)
+        for e in self.allEdges:
             self._grafo.add_edge(e[0], e[1], weight = e[2])
+
 
     def getGraphDetails(self):
         return self._grafo.number_of_nodes(), self._grafo.number_of_edges()
@@ -41,7 +42,3 @@ class Model:
                  best = score
 
         return bestdriver, best
-
-
-
-

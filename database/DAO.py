@@ -3,6 +3,7 @@ from model.driver import Driver
 
 
 class DAO():
+
     @staticmethod
     def getAllYears():
         conn = DBConnect.get_connection()
@@ -10,7 +11,7 @@ class DAO():
         results = []
 
         cursor = conn.cursor(dictionary=True)
-        query = "SELECT distinct year FROM seasons s  ORDER BY year"
+        query = "select distinct year from seasons s"
 
         cursor.execute(query)
 
@@ -21,20 +22,21 @@ class DAO():
         conn.close()
         return results
 
+    @staticmethod
     def getDriversByYear(year):
         conn = DBConnect.get_connection()
 
         results = []
 
         cursor = conn.cursor(dictionary=True)
-        query = """select distinct d.driverId  as driverID, d.forename as name, d.surname as surname
+        query = """select distinct d.driverId as driverID, d.forename as name, d.surname as surname
                     from drivers d, races r, results re
-                    WHERE r.`year` = %s
-                    and r.raceId = re.raceId 
+                    where r.`year` = %s
                     and d.driverId = re.driverId 
+                    and r.raceId = re.raceId 
                     and re.`position` is not null"""
 
-        cursor.execute(query, (year,))
+        cursor.execute(query, (year, ))
 
         for row in cursor:
             results.append(Driver(**row))
@@ -44,26 +46,26 @@ class DAO():
         return results
 
     @staticmethod
-    def getDriverYearResults(year, idMap):
+    def getDriversByYearResults(year, idMapDrivers):
         conn = DBConnect.get_connection()
 
         results = []
 
         cursor = conn.cursor(dictionary=True)
         query = """select r1.driverId as d1, r2.driverId as d2, count(*) as cnt
-    				from results as r1, results as r2, races
-    				where r1.raceId = r2.raceId
-    				and races.raceId = r1.raceId
-    				and races.year = %s
-    				and r1.position is not null
-    				and r2.position is not null 
-    				and r1.position < r2.position 
-    				group by d1, d2"""
+                    from results r1, results r2, races r
+                    where r1.raceId = r2.raceId 
+                    and r.raceId = r1.raceId 
+                    and r.`year` = %s
+                    and r1.position < r2.position
+                    and r1.`position` is not null
+                    and r1.`position` is not null
+                    group by d1, d2"""
 
         cursor.execute(query, (year,))
 
         for row in cursor:
-            results.append((idMap[row["d1"]], idMap[row["d2"]], row["cnt"]))
+            results.append((idMapDrivers[row["d1"]],idMapDrivers[row["d2"]], row["cnt"]))
 
         cursor.close()
         conn.close()

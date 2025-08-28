@@ -8,25 +8,28 @@ class Controller:
         # the model, which implements the logic of the program and holds the data
         self._model = model
 
+
     def handleCreaGrafo(self,e):
-        anno = self._view._ddAnno.value
-        self._model.buildGraph(anno)
-        Nnodes, Nedges = self._model.getGraphDetails()
+        year = self._view._ddAnno.value
+        self._model.buildGraph(year)
+
+        n, e = self._model.getGraphDetails()
+
         self._view.txt_result.controls.clear()
-        self._view.txt_result.controls.append(ft.Text("Grafo correttamente creato:"))
-        self._view.txt_result.controls.append(ft.Text(f"Numero di nodi:{Nnodes}"))
-        self._view.txt_result.controls.append(ft.Text(f"Numero di archi:{Nedges}"))
+        self._view.txt_result.controls.append(ft.Text(f"Grafo correttamente creato."))
+        self._view.txt_result.controls.append(ft.Text(f"Numero di nodi: {n}."))
+        self._view.txt_result.controls.append(ft.Text(f"Numero di archi: {e}."))
 
         bestdriver, best = self._model.getBestDriver()
-
         self._view.txt_result.controls.append(ft.Text(f"Best driver: {bestdriver}, with score {best}"))
-        self._view.update_page()
 
+        self._view.update_page()
 
     def handleCerca(self, e):
         pass
 
     def fillDDYear(self):
-        years = self._model.getAllYears()
+        years = self._model.getYears()
         for year in years:
             self._view._ddAnno.options.append(ft.dropdown.Option(year))
+        self._view.update_page()
